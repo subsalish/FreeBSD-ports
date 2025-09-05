@@ -1,5 +1,5 @@
 PORTNAME=		openvpn
-DISTVERSION=		2.6.8
+DISTVERSION=		2.6.14
 PORTREVISION?=		1
 CATEGORIES=		security net net-vpn
 MASTER_SITES=		https://swupdate.openvpn.org/community/releases/ \
@@ -25,11 +25,12 @@ SHEBANG_FILES=		sample/sample-scripts/auth-pam.pl \
 			sample/sample-scripts/verify-cn
 
 GNU_CONFIGURE=		yes
+GNU_CONFIGURE_MANPREFIX=	${PREFIX}/share
 CONFIGURE_ARGS+=	--enable-strict --with-crypto-library=openssl
 # set PLUGIN_LIBDIR so that unqualified plugin paths are found:
 CONFIGURE_ENV+=		PLUGINDIR="${PREFIX}/lib/openvpn/plugins"
 
-CONFLICTS_INSTALL?=	openvpn-2* openvpn-devel openvpn-mbedtls
+CONFLICTS_INSTALL?=	openvpn-devel
 
 SUB_FILES=		pkg-message openvpn-client
 
@@ -42,7 +43,6 @@ PORTEXAMPLES=		*
 OPTIONS_DEFINE=		ASYNC_PUSH DCO DOCS EASYRSA EXAMPLES LZ4 LZO PKCS11 SMALL \
 			TEST UNITTESTS X509ALTUSERNAME
 OPTIONS_DEFAULT=	DCO EASYRSA LZ4 LZO PKCS11 TEST
-OPTIONS_EXCLUDE_FreeBSD_12=	DCO # FreeBSD 14 only
 OPTIONS_EXCLUDE_FreeBSD_13=	DCO # FreeBSD 14 only
 
 ASYNC_PUSH_DESC=	Enable async-push support
@@ -105,6 +105,7 @@ pre-everything::
 .endif
 
 post-patch:
+	${RM} sample/sample-keys/dh2048.pem  # no longer needed
 	${REINPLACE_CMD} -E -i '' -e 's/(user|group) nobody/\1 openvpn/' \
 		-e 's/"nobody"( after init)/"openvpn" \1/' \
 		${WRKSRC}/sample/sample-config-files/*.conf \
